@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Smart Timetable System — Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+<style>
+  :root {
+    --bg:#0a0a0f; --surface:#111118; --surface2:#15151e; --border:#1e1e2e;
+    --accent:#7c6aff; --accent2:#ff6ab0; --accent3:#4dffa4; --text:#e8e8f0; --muted:#6666aa;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,106,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(124,106,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--border);background:rgba(10,10,15,.85);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;letter-spacing:2px;display:flex;align-items:center;gap:10px}
+  .logo-dot{width:9px;height:9px;background:var(--accent);border-radius:50%;box-shadow:0 0 14px var(--accent);animation:blink 2s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .user-badge{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)}
+  .role-tag{background:rgba(124,106,255,.15);border:1px solid rgba(124,106,255,.3);color:var(--accent);padding:4px 10px;border-radius:20px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-family:'Syne',sans-serif;font-weight:700}
+  .logout-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .2s}
+  .logout-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+  .main{max-width:1100px;margin:0 auto;padding:60px 40px}
+  .hero{margin-bottom:56px;animation:slideUp .5s cubic-bezier(.16,1,.3,1) both}
+  @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  .greeting{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:48px;line-height:1.1;background:linear-gradient(135deg,var(--text) 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:14px}
+  .hero p{font-size:13px;color:var(--muted);max-width:460px;line-height:1.7}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;cursor:pointer;position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s,border-color .25s;animation:slideUp .5s cubic-bezier(.16,1,.3,1) both}
+  .card:nth-child(1){animation-delay:.05s}.card:nth-child(2){animation-delay:.10s}.card:nth-child(3){animation-delay:.15s}.card:nth-child(4){animation-delay:.20s}.card:nth-child(5){animation-delay:.25s}
+  .card:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 20px 48px rgba(0,0,0,.5),0 0 0 1px rgba(124,106,255,.2)}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--card-accent,var(--accent)),transparent);opacity:0;transition:opacity .3s}
+  .card:hover::before{opacity:1}
+  .card-icon{width:48px;height:48px;background:rgba(124,106,255,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px;border:1px solid rgba(124,106,255,.2)}
+  .card h3{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:8px}
+  .card p{font-size:12px;color:var(--muted);line-height:1.6}
+  .card-arrow{position:absolute;bottom:24px;right:24px;color:var(--muted);font-size:18px;transition:transform .2s,color .2s}
+  .card:hover .card-arrow{transform:translate(4px,-4px);color:var(--accent)}
+  .card.admin{--card-accent:var(--accent2)}
+  .card.admin .card-icon{background:rgba(255,106,176,.1);border-color:rgba(255,106,176,.2)}
+  .card.admin:hover{border-color:var(--accent2);box-shadow:0 20px 48px rgba(0,0,0,.5),0 0 0 1px rgba(255,106,176,.2)}
+  .card.admin:hover .card-arrow{color:var(--accent2)}
+  .section-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;margin-top:40px;display:flex;align-items:center;gap:12px}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+</style>
+
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><div class="logo-dot"></div>STS</div>
+  <div class="user-badge">
+    <span id="usernameDisplay"></span>
+    <span class="role-tag" id="roleDisplay"></span>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="hero">
+    <div class="greeting">// smart timetable system</div>
+    <h1>Main Dashboard</h1>
+    <p>Manage your lecture schedules, generate automated timetables, and access your saved files.</p>
+  </div>
+
+  <div class="section-label">Timetable Actions</div>
+  <div class="grid">
+    <div class="card" onclick="navigate('generate.html')">
+      <div class="card-icon">⚡</div>
+      <h3>Generate Timetable</h3>
+      <p>Input lectures and auto-schedule them using constraint-based backtracking.</p>
+      <span class="card-arrow">↗</span>
+    </div>
+    <div class="card" onclick="navigate('timetable-viewer.html')">
+      <div class="card-icon">📂</div>
+      <h3>Load Timetable</h3>
+      <p>Open and view a previously saved timetable file from disk.</p>
+      <span class="card-arrow">↗</span>
+    </div>
+    <div class="card" onclick="navigate('timetable-viewer.html')">
+      <div class="card-icon">📋</div>
+      <h3>List Timetables</h3>
+      <p>Browse all saved timetable files associated with your account.</p>
+      <span class="card-arrow">↗</span>
+    </div>
+    <div class="card" onclick="navigate('timetable-viewer.html')">
+      <div class="card-icon">🗑️</div>
+      <h3>Delete Timetable</h3>
+      <p>Remove a saved timetable file permanently from the system.</p>
+      <span class="card-arrow">↗</span>
+    </div>
+  </div>
+
+  <div id="adminSection" style="display:none;">
+    <div class="section-label">Admin Controls</div>
+    <div class="grid">
+      <div class="card admin" onclick="navigate('admin.html')">
+        <div class="card-icon">🛡️</div>
+        <h3>Admin Panel</h3>
+        <p>Manage users, view all timetables, and perform administrative operations.</p>
+        <span class="card-arrow">↗</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Guard: redirect to login if not authenticated
+  const token    = localStorage.getItem('sts_token');
+  const role     = localStorage.getItem('sts_role');
+  const username = localStorage.getItem('sts_username');
+
+  if (!token) window.location.href = 'auth.html';
+
+  document.getElementById('usernameDisplay').textContent = username || '';
+  document.getElementById('roleDisplay').textContent     = role    || '';
+  if (role === 'admin') document.getElementById('adminSection').style.display = 'block';
+
+  function navigate(page) {
+    window.location.href = page;
+  }
+
+  function logout() {
+    if (confirm('Log out?')) {
+      localStorage.removeItem('sts_token');
+      localStorage.removeItem('sts_role');
+      localStorage.removeItem('sts_username');
+      window.location.href = 'auth.html';
+    }
+  }
+</script>
+</body>
+</html>

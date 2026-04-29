@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smart Timetable System — Auth</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --border: #222230;
+    --accent: #7c6aff; --accent2: #ff6ab0; --text: #e8e8f0;
+    --muted: #6666aa; --success: #4dffa4; --error: #ff6a6a;
+    --input-bg: #16161f;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh; display: flex; align-items: center;
+    justify-content: center; overflow: hidden; position: relative;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,255,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridDrift 20s linear infinite; pointer-events: none;
+  }
+  @keyframes gridDrift { 0%{background-position:0 0} 100%{background-position:48px 48px} }
+  .orb { position:fixed; border-radius:50%; filter:blur(120px); pointer-events:none; opacity:0.18; animation:pulse 8s ease-in-out infinite; }
+  .orb1 { width:500px;height:500px; background:var(--accent); top:-100px; left:-100px; }
+  .orb2 { width:400px;height:400px; background:var(--accent2); bottom:-80px; right:-80px; animation-delay:-4s; }
+  @keyframes pulse { 0%,100%{opacity:.18;transform:scale(1)} 50%{opacity:.28;transform:scale(1.08)} }
+  .card {
+    background:var(--surface); border:1px solid var(--border); border-radius:20px;
+    width:400px; padding:48px 40px; position:relative; z-index:10;
+    box-shadow:0 0 0 1px rgba(124,106,255,.08),0 40px 80px rgba(0,0,0,.6);
+    animation:slideUp .5s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:translateY(0)} }
+  .logo {
+    font-family:'Syne',sans-serif; font-weight:800; font-size:11px;
+    letter-spacing:4px; text-transform:uppercase; color:var(--muted);
+    margin-bottom:32px; display:flex; align-items:center; gap:10px;
+  }
+  .logo::before {
+    content:''; display:inline-block; width:8px;height:8px;
+    background:var(--accent); border-radius:50%; box-shadow:0 0 12px var(--accent);
+    animation:blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .tabs { display:flex; background:var(--input-bg); border-radius:10px; padding:4px; margin-bottom:36px; }
+  .tab {
+    flex:1; background:none; border:none; color:var(--muted);
+    font-family:'Syne',sans-serif; font-weight:700; font-size:13px; letter-spacing:1px;
+    padding:10px; border-radius:8px; cursor:pointer; transition:all .25s;
+  }
+  .tab.active { background:var(--accent); color:#fff; box-shadow:0 4px 16px rgba(124,106,255,.4); }
+  .form-section { display:none; }
+  .form-section.active { display:block; animation:fadeIn .3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  h2 {
+    font-family:'Syne',sans-serif; font-weight:800; font-size:26px; margin-bottom:6px;
+    background:linear-gradient(135deg,var(--text) 40%,var(--accent));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .subtitle { font-size:12px; color:var(--muted); margin-bottom:28px; }
+  .field { margin-bottom:18px; }
+  label { display:block; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  input {
+    width:100%; background:var(--input-bg); border:1px solid var(--border);
+    color:var(--text); font-family:'DM Mono',monospace; font-size:14px;
+    padding:12px 16px; border-radius:10px; outline:none;
+    transition:border-color .2s,box-shadow .2s;
+  }
+  input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(124,106,255,.15); }
+  .btn {
+    width:100%; padding:14px; background:var(--accent); color:#fff; border:none;
+    border-radius:10px; font-family:'Syne',sans-serif; font-weight:700; font-size:14px;
+    letter-spacing:1.5px; cursor:pointer; margin-top:8px; position:relative;
+    overflow:hidden; transition:transform .15s,box-shadow .2s;
+  }
+  .btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(124,106,255,.45); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+  .btn::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.15),transparent); pointer-events:none; }
+  .msg { margin-top:16px; padding:12px 16px; border-radius:8px; font-size:13px; display:none; }
+  .msg.success { background:rgba(77,255,164,.1);border:1px solid rgba(77,255,164,.3);color:var(--success); }
+  .msg.error   { background:rgba(255,106,106,.1);border:1px solid rgba(255,106,106,.3);color:var(--error); }
+  .msg.show { display:block; animation:fadeIn .3s ease; }
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="card">
+  <div class="logo">Smart Timetable System</div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('login')">Login</button>
+    <button class="tab" onclick="switchTab('signup')">Sign Up</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="form-section active" id="login">
+    <h2>Welcome back</h2>
+    <p class="subtitle">Sign in to your account to continue</p>
+    <div class="field"><label>Username</label><input type="text" id="login-user" placeholder="your_username" autocomplete="off"/></div>
+    <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"/></div>
+    <button class="btn" id="login-btn" onclick="doLogin()">LOGIN →</button>
+    <div class="msg" id="login-msg"></div>
+  </div>
+
+  <!-- SIGNUP -->
+  <div class="form-section" id="signup">
+    <h2>Create account</h2>
+    <p class="subtitle">New user? Register to get started</p>
+    <div class="field"><label>Username</label><input type="text" id="su-user" placeholder="choose_a_username" autocomplete="off"/></div>
+    <div class="field"><label>Password</label><input type="password" id="su-pass" placeholder="••••••••"/></div>
+    <button class="btn" id="signup-btn" onclick="doSignup()">CREATE ACCOUNT →</button>
+    <div class="msg" id="signup-msg"></div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+
+  // If already logged in, redirect to dashboard
+  if (localStorage.getItem('sts_token')) {
+    window.location.href = 'dashboard.html';
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'signup'));
+    });
+    document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+  }
+
+  function showMsg(id, type, text) {
+    const el = document.getElementById(id);
+    el.className = 'msg ' + type + ' show';
+    el.textContent = text;
+  }
+
+  async function doLogin() {
+    const u = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value;
+    if (!u || !p) return showMsg('login-msg', 'error', '❌ Please fill in all fields.');
+
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'Logging in...';
+
+    try {
+      const res  = await fetch(`${API}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showMsg('login-msg', 'error', '❌ ' + (data.error || 'Login failed'));
+      } else {
+        localStorage.setItem('sts_token',    data.token);
+        localStorage.setItem('sts_role',     data.role);
+        localStorage.setItem('sts_username', data.username);
+        showMsg('login-msg', 'success', '✅ Login successful! Redirecting...');
+        setTimeout(() => window.location.href = 'dashboard.html', 800);
+      }
+    } catch (e) {
+      showMsg('login-msg', 'error', '❌ Cannot reach server. Is it running?');
+    } finally {
+      btn.disabled = false; btn.textContent = 'LOGIN →';
+    }
+  }
+
+  async function doSignup() {
+    const u = document.getElementById('su-user').value.trim();
+    const p = document.getElementById('su-pass').value;
+    if (!u || !p) return showMsg('signup-msg', 'error', '❌ Please fill in all fields.');
+    if (p.length < 4) return showMsg('signup-msg', 'error', '❌ Password too short (min 4 chars).');
+
+    const btn = document.getElementById('signup-btn');
+    btn.disabled = true; btn.textContent = 'Creating...';
+
+    try {
+      const res  = await fetch(`${API}/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showMsg('signup-msg', 'error', '❌ ' + (data.error || 'Signup failed'));
+      } else {
+        showMsg('signup-msg', 'success', '✅ Account created! You can now login.');
+        setTimeout(() => switchTab('login'), 1500);
+      }
+    } catch (e) {
+      showMsg('signup-msg', 'error', '❌ Cannot reach server. Is it running?');
+    } finally {
+      btn.disabled = false; btn.textContent = 'CREATE ACCOUNT →';
+    }
+  }
+
+  // Allow Enter key
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const active = document.querySelector('.form-section.active')?.id;
+    if (active === 'login') doLogin();
+    else if (active === 'signup') doSignup();
+  });
+</script>
+</body>
+</html>
